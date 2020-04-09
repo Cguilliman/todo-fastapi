@@ -4,13 +4,11 @@ from .base import Base
 from .user import User
 
 
-class Notification(Base):
-    __tablename__ = "notification"
+class Board(Base):
+    __tablename__ = "board"
 
     title = models.Column(models.String)
-    notification = models.Column(models.String)
     user = models.Column(
         models.Integer, models.ForeignKey("user.id")
     )
-    created_at = models.Column(models.DateTime)
     user_id = relationship(User)
