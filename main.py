@@ -1,14 +1,20 @@
 from fastapi import FastAPI
+from starlette.requests import Request
+from starlette.responses import Response
+from models.base import SessionLocal
+from routes import routes
 
 
 app = FastAPI()
+app.include_router(routes)
 
 
-@app.get("/")
-def read_root():
-    return {"Title": "hello"}
-
-
-@app.get("/item/{item_id}")
-def read_item(item_id, q=None):
-    return {"item_id": item_id, "q": q}
+@app.middleware("http")
+async def db_session_middleware(request: Request, call_next):
+    response = Response("Internal server error", status_code=500)
+    try:
+        request.state.db = SessionLocal()
+        response = await call_next(request)
+    finally:
+        request.state.db.close()
+    return response
