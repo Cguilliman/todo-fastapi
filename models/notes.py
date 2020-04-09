@@ -1,20 +1,23 @@
 import sqlalchemy as models
 from sqlalchemy.orm import relationship
 from .base import Base
+from .boards import Board
 from .user import User
 
 
-class Notification(Base):
-    __tablename__ = "notifications"
+class Note(Base):
+    __tablename__ = "notes"
 
     id = models.Column(
         models.Integer, primary_key=True,
         index=True, unique=True
     )
-    title = models.Column(models.String)
-    notification = models.Column(models.String)
+    note = models.Column(models.String)
     user = models.Column(
         models.Integer, models.ForeignKey("users.id")
     )
-    created_at = models.Column(models.DateTime)
+    board = models.Column(
+        models.Integer, models.ForeignKey("boards.id")
+    )
     user_id = relationship(User)
+    board_id = relationship(Board)

@@ -3,8 +3,12 @@ from .base import Base
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
+    id = models.Column(
+        models.Integer, primary_key=True,
+        index=True, unique=True
+    )
     username = models.Column(models.String)
     email = models.Column(models.String)
     password = models.Column(models.String)
