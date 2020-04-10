@@ -1,7 +1,8 @@
-makemigration:
-    alembic revision --autogenerate
+start:
+	uvicorn main:app --reload
 
-# start: uvicorn main:app --reload
+makemigration:
+	alembic revision --autogZenerat
 
 migrate:
-    alembic upgrade head
+	alembic upgrade head
