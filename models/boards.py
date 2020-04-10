@@ -1,7 +1,6 @@
 import sqlalchemy as models
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship
 from .base import Base
-from .user import User
 
 
 class Board(Base):
@@ -12,7 +11,4 @@ class Board(Base):
         index=True, unique=True
     )
     title = models.Column(models.String)
-    user = models.Column(
-        models.Integer, models.ForeignKey("users.id")
-    )
-    user_id = relationship(User)
+    members = relationship("Member", back_populates="board")

@@ -3,3 +3,4 @@ from .boards import *
 from .notes import *
 from .notifications import *
 from .user import *
+from .members import *

@@ -13,8 +13,9 @@ class Notification(Base):
     )
     title = models.Column(models.String)
     notification = models.Column(models.String)
-    user = models.Column(
+    created_at = models.Column(models.DateTime)
+    # Relations
+    user_id = models.Column(
         models.Integer, models.ForeignKey("users.id")
     )
-    created_at = models.Column(models.DateTime)
-    user_id = relationship(User)
+    user = relationship(User)
