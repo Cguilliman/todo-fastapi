@@ -1,5 +1,5 @@
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from contrib.permissions.consts import MemberPermissions
 
 
@@ -26,18 +26,38 @@ class Editable(BaseModel):
         return instance
 
 
+# Member schemas
 class MemberBase(Editable):
     id: int
+    user_id: int
     permissions: MemberPermissions
 
-    # class Config:
-    #     orm_mode = True
-
     def get_permissions(self):
-        print(MemberPermissions.get_label(self.permissions))
         return MemberPermissions.get_label(self.permissions)
 
 
+class MemberAdd(BaseModel):
+    board_id: int
+    permissions: MemberPermissions
+    user_id: int
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            # Example
+            'example': {
+                "user_id": 1,
+                "permissions": 2,
+                "board_id": 1
+            }
+        }
+
+
+class MemberAddReceive(MemberAdd):
+    id: int
+
+
+# Board schemas
 class BoardBase(BaseModel):
     title: str
 
@@ -54,6 +74,7 @@ class BoardCreate(BoardBase):
     user: int
 
 
+# User schemas
 class UserBase(BaseModel):
     username: str
     email: str
