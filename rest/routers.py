@@ -4,22 +4,30 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from models import Board, get_db, User
-from contrib.boards import create_board
-from .schemas import BoardReceive, BoardCreate, UserReceive, UserCreate
+from contrib.boards import create_board, add_member
+from .schemas import (
+    BoardReceive, BoardCreate,
+    UserReceive, UserCreate,
+    MemberAdd, MemberAddReceive
+)
 
 
 router = APIRouter()
 
 
-@router.get("/boards/list", response_model=List[BoardReceive])
-def boards_list(db: Session = Depends(get_db)):
-    # print(db.query(Board).all()[-1].members[0].permissions)
+@router.get("/board/list", response_model=List[BoardReceive])
+def board_list(db: Session = Depends(get_db)):
     return db.query(Board).all()
 
 
-@router.post("/boards/create", response_model=BoardReceive)
-def boards_create(item: BoardCreate, db: Session = Depends(get_db)):
+@router.post("/board/create", response_model=BoardReceive)
+def board_create(item: BoardCreate, db: Session = Depends(get_db)):
     return create_board(db, item)
+
+
+@router.post("/board/member/add", response_model=MemberAddReceive)
+def board_member_add(item: MemberAdd, db: Session = Depends(get_db)):
+    return add_member(db, item)
 
 
 @router.post("/user/create")
