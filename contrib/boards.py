@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from contextlib import contextmanager
 
 from rest.schemas import BoardCreate, MemberAdd
-from .permissions.services import Permissions
+from .permissions.services import Permissions, Validator as PermissionValidation
 from models import Board, Member, User
 
 
@@ -44,14 +44,9 @@ def create_board(db: Session, board_data: BoardCreate):
 
 def add_member(db: Session, adding_dto: MemberAdd) -> Member:
     # Validate schema data by database instance
-    validated_data, members = validate_add_member(db, adding_dto)
+    validated_data, member = validate_add_member(db, adding_dto)
     # Check is members existing
-    if members:
-        if len(members) > 1:
-            # Normalize board members related to similar user
-            member = normalize_board_member(members, db)[0]
-        else:
-            member = members[0]
+    if member:
         # Update member permissions
         member.permissions = validated_data.get("permissions")
     else:
@@ -63,7 +58,7 @@ def add_member(db: Session, adding_dto: MemberAdd) -> Member:
     return member
 
 
-def validate_add_member(db: Session, dto: MemberAdd) -> (Dict, Board, Optional[List[Member]]):
+def validate_add_member(db: Session, dto: MemberAdd) -> (Dict, Board, Optional[Member]):
     data = dto.dict()
     # Get user and check is user with current id exists
     user = db.query(User).get(data.get("user_id"))
@@ -84,7 +79,14 @@ def validate_add_member(db: Session, dto: MemberAdd) -> (Dict, Board, Optional[L
         )
         .all()
     )
-    return data, members
+    member = None
+    if members:
+        if len(members) > 1:
+            # Normalize board members related to similar user
+            member = normalize_board_member(members, db)[0]
+        else:
+            member = members[0]
+    return data, member
 
 
 def normalize_board_member(members: List[Member], db: Session) -> List[Member]:
