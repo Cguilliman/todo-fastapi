@@ -1,23 +1,5 @@
 from typing import *
-from enum import Enum
-
-
-# MEMBER_TRANS = {
-#     1: "owner",
-#     2: "member",
-#     3: "guest",
-# }
-#
-#
-# class MemberPermissions(Enum):
-#     owner = 1
-#     member = 2
-#     guest = 3
-#
-#     @classmethod
-#     def get_label(cls, value_obj: Enum):
-#         # `._value_` - will return instance type result
-#         return MEMBER_TRANS.get(value_obj._value_)
+from enum import Enum, IntEnum
 
 
 class EnumLabelBuildingException(Exception):
@@ -51,7 +33,20 @@ EnumLabel = _EnumLabel()
 
 
 MemberPermissions = EnumLabel("_MemberPermissions", (
-    (1, "owner", "Owner"),
+    (3, "owner", "Owner"),
     (2, "member", "Member"),
-    (3, "guest", "Guest"),
+    (1, "guest", "Guest"),
 ))
+
+
+# Permissions
+READ = 'R'
+WRITE = 'W'
+SUPER_WRITE = 'SW'
+EDIT = 'E'
+# Permissions groups
+PERMISSIONS = {
+    1: (READ, ),
+    2: (READ, WRITE),
+    3: (READ, SUPER_WRITE, EDIT),
+}
