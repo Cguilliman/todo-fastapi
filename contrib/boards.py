@@ -1,30 +1,16 @@
 from typing import *
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from contextlib import contextmanager
 
 from rest.schemas import BoardCreate, MemberAdd
-from .permissions.services import Permissions, Validator as PermissionValidation
+from .permissions.services import Permissions, Validator
 from models import Board, Member, User
+from shared.transactions import atomic
 
 
-@contextmanager
-def transaction(db: Session):
-    """Simple transaction implementation in context manager"""
-    try:
-        db.begin_nested()
-        yield
-    except Exception as e:
-        db.rollback()
-        raise e
-    finally:
-        pass
-
-
-def create_board(db: Session, board_data: BoardCreate):
+def create_board(db: Session, board_data: BoardCreate, user: User):
     validated_data = board_data.dict()
-    user_id = validated_data.pop("user")
-    with transaction(db):
+    with atomic(db):
         # Create board
         board = Board(**validated_data)
         db.add(board)
@@ -35,16 +21,16 @@ def create_board(db: Session, board_data: BoardCreate):
             Permissions(
                 db,
                 board_id=board.id,
-                user_id=user_id
+                user_id=user.id
             )
             .create_owner()
         )
     return board
 
 
-def add_member(db: Session, adding_dto: MemberAdd) -> Member:
+def add_member(db: Session, adding_dto: MemberAdd, user: User) -> Member:
     # Validate schema data by database instance
-    validated_data, member = validate_add_member(db, adding_dto)
+    validated_data, member = validate_add_member(db, adding_dto, user)
     # Check is members existing
     if member:
         # Update member permissions
@@ -58,24 +44,38 @@ def add_member(db: Session, adding_dto: MemberAdd) -> Member:
     return member
 
 
-def validate_add_member(db: Session, dto: MemberAdd) -> (Dict, Board, Optional[Member]):
-    data = dto.dict()
+def validate_add_member(db: Session, dto: MemberAdd, user: User) -> (Dict, Board, Optional[Member]):
     # Get user and check is user with current id exists
-    user = db.query(User).get(data.get("user_id"))
+    user = db.query(User).get(dto.user_id)
     if not user:
         raise HTTPException(status_code=400, detail="User is not exists.")
 
+    # TODO: Re-factor board-member getter to one query
     # Get board and check is board with current id exists
-    board = db.query(Board).get(data.get("board_id"))
+    board = db.query(Board).get(dto.board_id)
     if not board:
         raise HTTPException(status_code=400, detail="Board is not exists.")
+
+    # Get current board member and check is authorized user has enough permissions
+    current_member = (
+        db.query(Member)
+        .filter(
+            Member.board_id == dto.board_id
+            and Member.user_id == user.id
+        )
+    )
+    if not current_member or not Validator(current_member).is_editable():
+        raise HTTPException(
+            status_code=400,
+            detail="You has not enough permissions to edit current board`s members list."
+        )
 
     # Get members with current id
     members = (
         db.query(Member)
         .filter(
-            Member.board_id == data.get("board_id")
-            and Member.user_id == data.get("user_id")
+            Member.board_id == dto.board_id
+            and Member.user_id == dto.user_id
         )
         .all()
     )
@@ -86,7 +86,7 @@ def validate_add_member(db: Session, dto: MemberAdd) -> (Dict, Board, Optional[M
             member = normalize_board_member(members, db)[0]
         else:
             member = members[0]
-    return data, member
+    return dto.dict(), member
 
 
 def normalize_board_member(members: List[Member], db: Session) -> List[Member]:
