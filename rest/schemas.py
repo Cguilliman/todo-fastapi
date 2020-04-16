@@ -1,6 +1,24 @@
 from typing import List
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, root_validator
 from contrib.permissions.consts import MemberPermissions
+
+
+class SchemaLogin(BaseModel):
+    username: str
+    password: str
+
+
+class SchemaRegistration(BaseModel):
+    username: str
+    email: str
+    password1: str
+    password2: str
+
+    @root_validator()
+    def check_is_passwords_equals(cls, values):
+        if values.get("password1") != values.get("password2"):
+            raise ValueError("Passwords is not similar")
+        return values
 
 
 class Editable(BaseModel):
@@ -71,7 +89,7 @@ class BoardReceive(BoardBase):
 
 
 class BoardCreate(BoardBase):
-    user: int
+    pass
 
 
 # User schemas
