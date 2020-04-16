@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import Response
 from models.base import SessionLocal
-from routes import routes
+from rest.routers.base import routes
 
 
 app = FastAPI()
