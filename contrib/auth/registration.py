@@ -9,7 +9,7 @@ from .password import hash_password
 
 
 def validate_user_data(data: SchemaRegistration, db: Session) -> SchemaRegistration:
-    if bool(db.query(User).filter(User.username==data.username).first()):
+    if bool(db.query(User).filter(User.username == data.username).first()):
         raise HTTPException(status_code=400, detail="Same username already exists.")
     return data
 
@@ -23,4 +23,5 @@ def create_user(data: SchemaRegistration, db: Session):
     db.add(user)
     db.commit()
     db.refresh(user)
+    print(user)
     return User

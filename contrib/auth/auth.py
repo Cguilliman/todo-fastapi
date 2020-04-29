@@ -21,7 +21,7 @@ def get_user(db: Session, username: str):
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
     user = get_user(db, username)
-    if not user or not verify_password(password, user.password):
+    if not user or not verify_password(user.password, password):
         return
     return user
 
@@ -33,6 +33,7 @@ def create_access_token(user: User, expires_delta: timedelta = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
+    print(to_encode)
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -68,5 +69,6 @@ def create_payload(user: User):
     return {
         "username": user.username,
         "password": user.password,
-        "last_login": user.last_login,
+        # TODO: format to json encode
+        # "last_login": user.last_login,
     }

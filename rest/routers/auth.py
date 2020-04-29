@@ -37,7 +37,7 @@ async def user_receive(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@router.post("/user/register/", response_model=UserReceive)
+@router.post("/user/register/")  # , response_model=UserReceive
 async def register(data: SchemaRegistration, db: Session = Depends(get_db)):
     return create_user(data, db)
 

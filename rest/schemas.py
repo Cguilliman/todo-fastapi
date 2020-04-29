@@ -107,3 +107,16 @@ class UserReceive(UserBase):
 
 class UserCreate(UserBase):
     password: str
+
+
+# Notes
+class NoteBase(BaseModel):
+    board: BoardReceive
+    note: str
+
+    class Config:
+        orm_mode = True
+
+
+class NoteReceive(NoteBase):
+    id: int
