@@ -1,6 +1,6 @@
 from typing import *
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from models import Note, get_db, User, Board, Member

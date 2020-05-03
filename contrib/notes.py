@@ -7,7 +7,7 @@ from rest.schemas import NoteBase
 from .permissions.services import Validator
 
 
-def validate_note_creation(board_id: int, user: User, db: Session) -> Member:
+def validate_note_creation(board_id: int, user: User, db: Session) -> (Member, Board):
     board = db.query(Board).get(board_id)
     # Mb refactor to another 404 way
     if not board:

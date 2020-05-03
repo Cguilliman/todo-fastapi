@@ -1,6 +1,7 @@
 from enum import Enum
 import sqlalchemy as models
 from sqlalchemy.orm import relationship
+
 from .base import Base
 from contrib.permissions.consts import MemberPermissions
 
